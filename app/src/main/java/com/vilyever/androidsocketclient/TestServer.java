@@ -389,7 +389,7 @@ public class TestServer {
          * 使用{@link com.vilyever.socketclient.helper.SocketPacketHelper.ReadStrategy.AutoReadByLength}必须设置此项
          * 用于分隔多条消息
          */
-        socketServer.getSocketPacketHelper().setSendPacketLengthDataConvertor(new SocketPacketHelper.SendPacketLengthDataConvertor() {
+        socketServer.getSocketPacketHelper().setSendPacketLengthDataConverter(new SocketPacketHelper.SendPacketLengthDataConvertor() {
             @Override
             public byte[] obtainSendPacketLengthDataForPacketLength(SocketPacketHelper helper, int packetLength) {
                 /**

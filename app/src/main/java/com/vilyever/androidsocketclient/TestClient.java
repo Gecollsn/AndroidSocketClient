@@ -373,7 +373,7 @@ public class TestClient {
          * 使用{@link com.vilyever.socketclient.helper.SocketPacketHelper.ReadStrategy.AutoReadByLength}必须设置此项
          * 用于分隔多条消息
          */
-        socketClient.getSocketPacketHelper().setSendPacketLengthDataConvertor(new SocketPacketHelper.SendPacketLengthDataConvertor() {
+        socketClient.getSocketPacketHelper().setSendPacketLengthDataConverter(new SocketPacketHelper.SendPacketLengthDataConvertor() {
             @Override
             public byte[] obtainSendPacketLengthDataForPacketLength(SocketPacketHelper helper, int packetLength) {
                 /**

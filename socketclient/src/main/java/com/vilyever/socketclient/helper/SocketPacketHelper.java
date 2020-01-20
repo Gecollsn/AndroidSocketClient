@@ -8,9 +8,6 @@ import java.util.Arrays;
  * Feature:
  */
 public class SocketPacketHelper {
-    final SocketPacketHelper self = this;
-
-
     /* Constructors */
     public SocketPacketHelper() {
     }
@@ -20,7 +17,7 @@ public class SocketPacketHelper {
         helper.setOriginal(this);
 
         helper.setSendHeaderData(getSendHeaderData());
-        helper.setSendPacketLengthDataConvertor(getSendPacketLengthDataConvertor());
+        helper.setSendPacketLengthDataConverter(getSendPacketLengthDataConvertor());
         helper.setSendTrailerData(getSendTrailerData());
         helper.setSendSegmentLength(getSendSegmentLength());
         helper.setSendSegmentEnabled(isSendSegmentEnabled());
@@ -83,10 +80,12 @@ public class SocketPacketHelper {
 
     /* Properties */
     private SocketPacketHelper original;
+
     protected SocketPacketHelper setOriginal(SocketPacketHelper original) {
         this.original = original;
         return this;
     }
+
     public SocketPacketHelper getOriginal() {
         if (this.original == null) {
             return this;
@@ -98,27 +97,31 @@ public class SocketPacketHelper {
      * 发送消息时自动添加的包头
      */
     private byte[] sendHeaderData;
+
     public SocketPacketHelper setSendHeaderData(byte[] sendHeaderData) {
         if (sendHeaderData != null) {
             this.sendHeaderData = Arrays.copyOf(sendHeaderData, sendHeaderData.length);
-        }
-        else {
+        } else {
             this.sendHeaderData = null;
         }
         return this;
     }
+
     public byte[] getSendHeaderData() {
         return this.sendHeaderData;
     }
-    
+
     private SendPacketLengthDataConvertor sendPacketLengthDataConvertor;
-    public SocketPacketHelper setSendPacketLengthDataConvertor(SendPacketLengthDataConvertor sendPacketLengthDataConvertor) {
+
+    public SocketPacketHelper setSendPacketLengthDataConverter(SendPacketLengthDataConvertor sendPacketLengthDataConvertor) {
         this.sendPacketLengthDataConvertor = sendPacketLengthDataConvertor;
         return this;
     }
+
     public SendPacketLengthDataConvertor getSendPacketLengthDataConvertor() {
         return this.sendPacketLengthDataConvertor;
     }
+
     public interface SendPacketLengthDataConvertor {
         byte[] obtainSendPacketLengthDataForPacketLength(SocketPacketHelper helper, int packetLength);
     }
@@ -127,15 +130,16 @@ public class SocketPacketHelper {
      * 发送消息时自动添加的包尾
      */
     private byte[] sendTrailerData;
+
     public SocketPacketHelper setSendTrailerData(byte[] sendTrailerData) {
         if (sendTrailerData != null) {
             this.sendTrailerData = Arrays.copyOf(sendTrailerData, sendTrailerData.length);
-        }
-        else {
+        } else {
             this.sendTrailerData = null;
         }
-        return this; 
+        return this;
     }
+
     public byte[] getSendTrailerData() {
         return this.sendTrailerData;
     }
@@ -147,10 +151,12 @@ public class SocketPacketHelper {
      * 不大于0表示不分段
      */
     private int sendSegmentLength;
+
     public SocketPacketHelper setSendSegmentLength(int sendSegmentLength) {
         this.sendSegmentLength = sendSegmentLength;
         return this;
     }
+
     public int getSendSegmentLength() {
         return this.sendSegmentLength;
     }
@@ -159,10 +165,12 @@ public class SocketPacketHelper {
      * 若sendSegmentLength不大于0，返回false
      */
     private boolean sendSegmentEnabled;
+
     public SocketPacketHelper setSendSegmentEnabled(boolean sendSegmentEnabled) {
         this.sendSegmentEnabled = sendSegmentEnabled;
         return this;
     }
+
     public boolean isSendSegmentEnabled() {
         if (getSendSegmentLength() <= 0) {
             return false;
@@ -175,31 +183,38 @@ public class SocketPacketHelper {
      * 仅在每个发送包开始发送时计时，结束后重置计时
      */
     private long sendTimeout;
+
     public SocketPacketHelper setSendTimeout(long sendTimeout) {
         this.sendTimeout = sendTimeout;
         return this;
     }
+
     public long getSendTimeout() {
         return this.sendTimeout;
     }
 
     private boolean sendTimeoutEnabled;
+
     public SocketPacketHelper setSendTimeoutEnabled(boolean sendTimeoutEnabled) {
         this.sendTimeoutEnabled = sendTimeoutEnabled;
         return this;
     }
+
     public boolean isSendTimeoutEnabled() {
         return this.sendTimeoutEnabled;
     }
 
     private ReadStrategy readStrategy = ReadStrategy.Manually;
+
     public SocketPacketHelper setReadStrategy(ReadStrategy readStrategy) {
         this.readStrategy = readStrategy;
         return this;
     }
+
     public ReadStrategy getReadStrategy() {
         return this.readStrategy;
     }
+
     public enum ReadStrategy {
         /**
          * 手动读取
@@ -225,15 +240,16 @@ public class SocketPacketHelper {
      * 若不为null，每一条接收消息都必须带有此头部信息，否则将无法读取
      */
     private byte[] receiveHeaderData;
+
     public SocketPacketHelper setReceiveHeaderData(byte[] receiveHeaderData) {
         if (receiveHeaderData != null) {
             this.receiveHeaderData = Arrays.copyOf(receiveHeaderData, receiveHeaderData.length);
-        }
-        else {
+        } else {
             this.receiveHeaderData = null;
         }
         return this;
     }
+
     public byte[] getReceiveHeaderData() {
         return this.receiveHeaderData;
     }
@@ -242,22 +258,27 @@ public class SocketPacketHelper {
      * 接收时，包长度data的固定字节数
      */
     private int receivePacketLengthDataLength;
+
     public SocketPacketHelper setReceivePacketLengthDataLength(int receivePacketLengthDataLength) {
         this.receivePacketLengthDataLength = receivePacketLengthDataLength;
         return this;
     }
+
     public int getReceivePacketLengthDataLength() {
         return this.receivePacketLengthDataLength;
     }
 
     private ReceivePacketDataLengthConvertor receivePacketDataLengthConvertor;
+
     public SocketPacketHelper setReceivePacketDataLengthConvertor(ReceivePacketDataLengthConvertor receivePacketDataLengthConvertor) {
         this.receivePacketDataLengthConvertor = receivePacketDataLengthConvertor;
         return this;
     }
+
     public ReceivePacketDataLengthConvertor getReceivePacketDataLengthConvertor() {
         return this.receivePacketDataLengthConvertor;
     }
+
     public interface ReceivePacketDataLengthConvertor {
         int obtainReceivePacketDataLength(SocketPacketHelper helper, byte[] packetLengthData);
     }
@@ -267,15 +288,16 @@ public class SocketPacketHelper {
      * 若不为null，每一条接收消息都必须带有此尾部信息，否则将与下一次输入流合并
      */
     private byte[] receiveTrailerData;
+
     public SocketPacketHelper setReceiveTrailerData(byte[] receiveTrailerData) {
         if (receiveTrailerData != null) {
             this.receiveTrailerData = Arrays.copyOf(receiveTrailerData, receiveTrailerData.length);
-        }
-        else {
+        } else {
             this.receiveTrailerData = null;
         }
         return this;
     }
+
     public byte[] getReceiveTrailerData() {
         return this.receiveTrailerData;
     }
@@ -286,10 +308,12 @@ public class SocketPacketHelper {
      * 设置后可手动变更receiveSegmentEnabled
      */
     private int receiveSegmentLength;
+
     public SocketPacketHelper setReceiveSegmentLength(int receiveSegmentLength) {
         this.receiveSegmentLength = receiveSegmentLength;
         return this;
     }
+
     public int getReceiveSegmentLength() {
         return this.receiveSegmentLength;
     }
@@ -298,10 +322,12 @@ public class SocketPacketHelper {
      * 若receiveSegmentLength不大于0，返回false
      */
     private boolean receiveSegmentEnabled;
+
     public SocketPacketHelper setReceiveSegmentEnabled(boolean receiveSegmentEnabled) {
         this.receiveSegmentEnabled = receiveSegmentEnabled;
         return this;
     }
+
     public boolean isReceiveSegmentEnabled() {
         if (getReceiveSegmentLength() <= 0) {
             return false;
@@ -313,29 +339,33 @@ public class SocketPacketHelper {
      * 读取超时时长，超过时长没有读取到任何消息自动断开连接
      */
     private long receiveTimeout;
+
     public SocketPacketHelper setReceiveTimeout(long receiveTimeout) {
         this.receiveTimeout = receiveTimeout;
         return this;
     }
+
     public long getReceiveTimeout() {
         return this.receiveTimeout;
     }
 
     private boolean receiveTimeoutEnabled;
+
     public SocketPacketHelper setReceiveTimeoutEnabled(boolean receiveTimeoutEnabled) {
         this.receiveTimeoutEnabled = receiveTimeoutEnabled;
         return this;
     }
+
     public boolean isReceiveTimeoutEnabled() {
         return this.receiveTimeoutEnabled;
     }
 
     /* Overrides */
-    
-    
+
+
     /* Delegates */
-    
-    
+
+
     /* Private Methods */
-    
+
 }

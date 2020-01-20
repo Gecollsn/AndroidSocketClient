@@ -10,10 +10,9 @@ import java.net.InetSocketAddress;
  * Feature:
  */
 public class SocketClientAddress {
-    final SocketClientAddress self = this;
 
     public static final int DefaultConnectionTimeout = 1000 * 15;
-    
+
     /* Constructors */
     public SocketClientAddress() {
         this(null, null);
@@ -75,13 +74,15 @@ public class SocketClientAddress {
     public InetSocketAddress getInetSocketAddress() {
         return new InetSocketAddress(getRemoteIP(), getRemotePortIntegerValue());
     }
-    
+
     /* Properties */
     private SocketClientAddress original;
+
     protected SocketClientAddress setOriginal(SocketClientAddress original) {
         this.original = original;
         return this;
     }
+
     public SocketClientAddress getOriginal() {
         if (this.original == null) {
             return this;
@@ -93,10 +94,12 @@ public class SocketClientAddress {
      * 远程IP
      */
     private String remoteIP;
+
     public SocketClientAddress setRemoteIP(String remoteIP) {
         this.remoteIP = remoteIP;
         return this;
     }
+
     public String getRemoteIP() {
         return this.remoteIP;
     }
@@ -105,10 +108,12 @@ public class SocketClientAddress {
      * 远程端口
      */
     private String remotePort;
+
     public SocketClientAddress setRemotePort(String remotePort) {
         this.remotePort = remotePort;
         return this;
     }
+
     public String getRemotePort() {
         return this.remotePort;
     }
@@ -117,21 +122,23 @@ public class SocketClientAddress {
      * 连接超时时间
      */
     private int connectionTimeout;
+
     public SocketClientAddress setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
         return this;
     }
+
     public int getConnectionTimeout() {
         return this.connectionTimeout;
     }
 
-    
+
     /* Overrides */
 
 
     /* Delegates */
-    
-    
+
+
     /* Private Methods */
-    
+
 }
