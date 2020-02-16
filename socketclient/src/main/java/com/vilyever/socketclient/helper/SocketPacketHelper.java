@@ -218,7 +218,6 @@ public class SocketPacketHelper {
     public enum ReadStrategy {
         /**
          * 手动读取
-         * 手动调用{@link com.vilyever.socketclient.SocketClient#readDataToData(byte[])}或{@link com.vilyever.socketclient.SocketClient#readDataToLength(int)}读取
          */
         Manually,
         /**

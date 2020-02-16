@@ -10,7 +10,7 @@ public class SocketConfigure {
     private String charsetName;
     private SocketPacketHelper socketPacketHelper = new SocketPacketHelper();
     private SocketHeartBeatHelper heartBeatHelper = new SocketHeartBeatHelper();
-    private SocketClientAddress address;
+    private SocketClientAddress address = new SocketClientAddress();
 
     public SocketConfigure setCharsetName(String charsetName) {
         this.charsetName = charsetName;

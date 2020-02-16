@@ -7,8 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.WorkerThread;
 
 import com.vilyever.socketclient.SocketClient;
+import com.vilyever.socketclient.helper.ClientStatusEvent;
 import com.vilyever.socketclient.helper.SocketClientAddress;
-import com.vilyever.socketclient.helper.SocketClientDelegate;
 import com.vilyever.socketclient.helper.SocketConfigure;
 import com.vilyever.socketclient.helper.SocketHeartBeatHelper;
 import com.vilyever.socketclient.helper.SocketPacketHelper;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
  * Created by vilyever on 2016/3/18.
  * Feature:
  */
-public class SocketServer implements SocketClientDelegate {
+public class SocketServer implements ClientStatusEvent {
     final SocketServer self = this;
 
     public static final int NoPort = -1;
@@ -47,7 +47,9 @@ public class SocketServer implements SocketClientDelegate {
 
         setPort(port);
 
-        getSocketConfigure().setCharsetName(getCharsetName()).setAddress(new SocketClientAddress(IPUtil.getLocalIPAddress(true), "" + port)).setHeartBeatHelper(getHeartBeatHelper()).setSocketPacketHelper(getSocketPacketHelper());
+        getSocketConfigure()
+                .setCharsetName(getCharsetName())
+                .setAddress(new SocketClientAddress(IPUtil.getLocalIPAddress(true), "" + port));
 
         if (getRunningServerSocket() == null) {
             return false;
@@ -405,7 +407,7 @@ public class SocketServer implements SocketClientDelegate {
 
                     SocketServerClient socketServerClient = self.internalGetSocketServerClient(socket);
                     getRunningSocketServerClients().add(socketServerClient);
-                    socketServerClient.registerSocketClientDelegate(self);
+                    socketServerClient.registerSocketStatusEvent(self);
                     self.__i__onSocketServerClientConnected(socketServerClient);
                 }
                 catch (IOException e) {

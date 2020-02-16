@@ -1,9 +1,9 @@
 package com.vilyever.socketclient.server;
 
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
 
 import com.vilyever.socketclient.SocketClient;
-import com.vilyever.socketclient.helper.SocketClientAddress;
 import com.vilyever.socketclient.helper.SocketConfigure;
 
 import java.net.Socket;
@@ -20,26 +20,28 @@ public class SocketServerClient extends SocketClient {
 
     /* Constructors */
     public SocketServerClient(@NonNull Socket socket, SocketConfigure configure) {
-        super(new SocketClientAddress(socket.getLocalAddress().toString().substring(1), "" + socket.getLocalPort()));
+        super();
 
-        setRunningSocket(socket);
-        getSocketConfigure().setCharsetName(configure.getCharsetName()).setAddress(getAddress()).setHeartBeatHelper(configure.getHeartBeatHelper()).setSocketPacketHelper(configure.getSocketPacketHelper());
+        setActiveSocket(socket);
+        getSocketConfigure()
+                .setCharsetName(configure.getCharsetName())
+                .setAddress(getAddress());
 
         internalOnConnected();
     }
 
-    /* Public Methods */
 
+    @CallSuper
+    protected void internalOnConnected() {
 
-    /* Properties */
-
-
-    /* Overrides */
-
-
-    /* Delegates */
-     
-     
-    /* Private Methods */
+//        setLastSendHeartBeatMessageTime(System.currentTimeMillis());
+//        setLastReceiveMessageTime(System.currentTimeMillis());
+//        setLastSendMessageTime(ISocketClient.NoSendingTime);
+//
+//        setSendingPacket(null);
+//        setReceivingResponsePacket(null);
+//
+//        __i__onConnected();
+    }
     
 }

@@ -5,9 +5,9 @@ import android.support.annotation.NonNull;
 
 import com.vilyever.logger.Logger;
 import com.vilyever.socketclient.SocketClient;
-import com.vilyever.socketclient.helper.SocketClientDelegate;
-import com.vilyever.socketclient.helper.SocketClientReceivingDelegate;
-import com.vilyever.socketclient.helper.SocketClientSendingDelegate;
+import com.vilyever.socketclient.helper.ClientReceivingEvent;
+import com.vilyever.socketclient.helper.ClientSendingEvent;
+import com.vilyever.socketclient.helper.ClientStatusEvent;
 import com.vilyever.socketclient.helper.SocketHeartBeatHelper;
 import com.vilyever.socketclient.helper.SocketPacket;
 import com.vilyever.socketclient.helper.SocketPacketHelper;
@@ -26,18 +26,19 @@ import java.util.Date;
  */
 public class TestClient {
     final TestClient self = this;
-    
-    
+
+
     /* Constructors */
-    
-    
+
+
     /* Public Methods */
     public void connect() {
         self.getLocalSocketClient().connect();
     }
-    
+
     /* Properties */
     private SocketClient localSocketClient;
+
     public SocketClient getLocalSocketClient() {
         if (this.localSocketClient == null) {
             this.localSocketClient = new SocketClient();
@@ -58,13 +59,13 @@ public class TestClient {
 //            __i__setupReadManuallyForSender(this.localSocketClient);
 //            __i__setupReadManuallyForReceiver(this.localSocketClient);
 
-            this.localSocketClient.registerSocketClientDelegate(new SocketClientDelegate() {
+            this.localSocketClient.registerSocketStatusEvent(new ClientStatusEvent() {
                 @Override
                 public void onConnected(SocketClient client) {
                     Logger.log("onConnected", "SocketClient: onConnected");
 
                     if (client.getSocketPacketHelper().getReadStrategy() == SocketPacketHelper.ReadStrategy.Manually) {
-                        client.readDataToLength(CharsetUtil.stringToData("Server accepted", CharsetUtil.UTF_8).length);
+//                        client.readDataToLength(CharsetUtil.stringToData("Server accepted", CharsetUtil.UTF_8).length);
                     }
                 }
 
@@ -77,8 +78,7 @@ public class TestClient {
                         protected Void doInBackground(Void... params) {
                             try {
                                 Thread.sleep(3 * 1000);
-                            }
-                            catch (InterruptedException e) {
+                            } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
 
@@ -106,17 +106,15 @@ public class TestClient {
                         protected Void doInBackground(Void... params) {
                             try {
                                 Thread.sleep(3 * 1000);
-                            }
-                            catch (InterruptedException e) {
+                            } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
 
-                            client.sendString("client on " + System.currentTimeMillis());
+                            client.sendMessage("client on " + System.currentTimeMillis());
 
                             try {
                                 Thread.sleep(3 * 1000);
-                            }
-                            catch (InterruptedException e) {
+                            } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
 
@@ -133,7 +131,7 @@ public class TestClient {
                     }.execute();
                 }
             });
-            this.localSocketClient.registerSocketClientSendingDelegate(new SocketClientSendingDelegate() {
+            this.localSocketClient.registerDataSendingEvent(new ClientSendingEvent() {
 
                 @Override
                 public void onSendPacketBegin(SocketClient client, SocketPacket packet) {
@@ -146,8 +144,8 @@ public class TestClient {
                 }
 
                 @Override
-                public void onSendingPacketInProgress(SocketClient client, SocketPacket packet, float progress, int sendedLength) {
-                    Logger.log("onSend", "SocketClient: onSendingPacketInProgress: " + packet.hashCode() + " : " + progress + " : " + sendedLength);
+                public void onSendingPacketInProgress(SocketClient client, SocketPacket packet, float progress, int sendLength) {
+                    Logger.log("onSend", "SocketClient: onSendingPacketInProgress: " + packet.hashCode() + " : " + progress + " : " + sendLength);
                 }
 
                 @Override
@@ -155,7 +153,7 @@ public class TestClient {
                     Logger.log("onSend", "SocketClient: onSendPacketEnd: " + packet.hashCode());
                 }
             });
-            this.localSocketClient.registerSocketClientReceiveDelegate(new SocketClientReceivingDelegate() {
+            this.localSocketClient.registerDataReceivingEvent(new ClientReceivingEvent() {
                 @Override
                 public void onReceivePacketBegin(SocketClient client, SocketResponsePacket packet) {
                     Logger.log("onReceive", "SocketClient: onReceivePacketBegin: " + packet.hashCode());
@@ -179,14 +177,15 @@ public class TestClient {
         }
         return this.localSocketClient;
     }
-    
+
     /* Overrides */
-    
-    
+
+
     /* Delegates */
-    
-    
+
+
     /* Private Methods */
+
     /**
      * 设置远程端地址信息
      */
@@ -198,7 +197,7 @@ public class TestClient {
 
     /**
      * 设置自动转换String类型到byte[]类型的编码
-     * 如未设置（默认为null），将不能使用{@link SocketClient#sendString(String)}发送消息
+     * 如未设置（默认为null），将不能使用{@link SocketClient#sendMessage(String)}发送消息
      * 如设置为非null（如UTF-8），在接受消息时会自动尝试在接收线程（非主线程）将接收的byte[]数据依照编码转换为String，在{@link SocketResponsePacket#getMessage()}读取
      */
     private void __i__setupEncoding(SocketClient socketClient) {
@@ -299,7 +298,7 @@ public class TestClient {
 
         /**
          * 设置分段发送数据长度
-         * 即在发送指定长度后通过 {@link SocketClientSendingDelegate#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
+         * 即在发送指定长度后通过 {@link ClientSendingEvent#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
          * 注意：回调过于频繁可能导致设置UI过于频繁从而导致主线程卡顿
          *
          * 若无需进度回调可删除此二行，删除后仍有【发送开始】【发送结束】的回调
@@ -408,7 +407,7 @@ public class TestClient {
 
         /**
          * 设置分段发送数据长度
-         * 即在发送指定长度后通过 {@link SocketClientSendingDelegate#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
+         * 即在发送指定长度后通过 {@link ClientSendingEvent#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
          * 注意：回调过于频繁可能导致设置UI过于频繁从而导致主线程卡顿
          *
          * 若无需进度回调可删除此二行，删除后仍有【发送开始】【发送结束】的回调
@@ -456,7 +455,7 @@ public class TestClient {
                 /**
                  * 简单将byte[]转换为int
                  */
-                int length =  (packetLengthData[3] & 0xFF) + ((packetLengthData[2] & 0xFF) << 8) + ((packetLengthData[1] & 0xFF) << 16) + ((packetLengthData[0] & 0xFF) << 24);
+                int length = (packetLengthData[3] & 0xFF) + ((packetLengthData[2] & 0xFF) << 8) + ((packetLengthData[1] & 0xFF) << 16) + ((packetLengthData[0] & 0xFF) << 24);
 
                 return length;
             }
@@ -492,7 +491,7 @@ public class TestClient {
     private void __i__setupReadManuallyForSender(SocketClient socketClient) {
         /**
          * 设置分段发送数据长度
-         * 即在发送指定长度后通过 {@link SocketClientSendingDelegate#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
+         * 即在发送指定长度后通过 {@link ClientSendingEvent#onSendingPacketInProgress(SocketClient, SocketPacket, float, int)}回调当前发送进度
          * 注意：回调过于频繁可能导致设置UI过于频繁从而导致主线程卡顿
          *
          * 若无需进度回调可删除此二行，删除后仍有【发送开始】【发送结束】的回调
@@ -515,8 +514,8 @@ public class TestClient {
         /**
          * 设置读取策略为手动读取
          * 手动读取有两种方法
-         * 1. {@link SocketClient#readDataToData(byte[], boolean)} )} 读取到与指定字节相同的字节序列后回调数据包
-         * 2. {@link SocketClient#readDataToLength(int)} 读取指定长度的字节后回调数据包
+         * 1.  读取到与指定字节相同的字节序列后回调数据包
+         * 2. 读取指定长度的字节后回调数据包
          *
          * 此时SocketPacketHelper中其他读取相关设置将会无效化
          */

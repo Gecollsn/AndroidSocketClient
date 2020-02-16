@@ -3,8 +3,8 @@ package com.vilyever.socketclient;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.vilyever.socketclient.helper.SocketClientDelegate;
-import com.vilyever.socketclient.helper.SocketClientSendingDelegate;
+import com.vilyever.socketclient.helper.ClientSendingEvent;
+import com.vilyever.socketclient.helper.ClientStatusEvent;
 import com.vilyever.socketclient.helper.SocketHeartBeatHelper;
 import com.vilyever.socketclient.helper.SocketPacket;
 import com.vilyever.socketclient.helper.SocketPacketHelper;
@@ -47,8 +47,8 @@ public class DcTcpClient {
 
     private ConnectStatusListener mConnectStatusListener;
     private SendStatusListener mSendStatusListener;
-    private SocketClientDelegate mSocketClientConnectListener;
-    private SocketClientSendingDelegate mSocketClientSendingListener;
+    private ClientStatusEvent mSocketClientConnectListener;
+    private ClientSendingEvent mSocketClientSendingListener;
 
     public boolean isConnected() {
         return isSocketConnected;
@@ -304,8 +304,8 @@ public class DcTcpClient {
             }
 
             this.mConnectStatusListener = null;
-            this.mSocketClient.removeSocketClientDelegate(mSocketClientConnectListener);
-            this.mSocketClient.removeSocketClientSendingDelegate(mSocketClientSendingListener);
+            this.mSocketClient.unregisterSocketStatusEvent(mSocketClientConnectListener);
+            this.mSocketClient.unregisterDataSendingEvent(mSocketClientSendingListener);
             this.mSocketClient.disconnect();
         }
     }
@@ -332,7 +332,7 @@ public class DcTcpClient {
                 this.mSendStatusListener.onSendCancel();
         } else {
             if (this.mSendStatusListener != null) {
-                this.mSocketClient.registerSocketClientSendingDelegate(getSocketClientSendingListener());
+                this.mSocketClient.registerDataSendingEvent(getSocketClientSendingListener());
             }
             this.mSocketClient.sendData(bodyData);
         }
@@ -343,15 +343,15 @@ public class DcTcpClient {
 
         //注册状态回调
         if (mConnectStatusListener != null) {
-            mSocketClient.registerSocketClientDelegate(getSocketClientConnectListener());
+            mSocketClient.registerSocketStatusEvent(getSocketClientConnectListener());
         }
 
         return this.mSocketClient;
     }
 
-    private SocketClientDelegate getSocketClientConnectListener() {
+    private ClientStatusEvent getSocketClientConnectListener() {
         if (mSocketClientConnectListener == null) {
-            mSocketClientConnectListener = new SocketClientDelegate() {
+            mSocketClientConnectListener = new ClientStatusEvent() {
                 @Override
                 public void onConnected(SocketClient client) {
                     isSocketConnected = true;
@@ -390,9 +390,9 @@ public class DcTcpClient {
         return mSocketClientConnectListener;
     }
 
-    private SocketClientSendingDelegate getSocketClientSendingListener() {
+    private ClientSendingEvent getSocketClientSendingListener() {
         if (mSocketClientSendingListener == null) {
-            mSocketClientSendingListener = new SocketClientSendingDelegate() {
+            mSocketClientSendingListener = new ClientSendingEvent() {
                 @Override
                 public void onSendPacketBegin(SocketClient client, SocketPacket packet) {
                     if (_isDebug) {
@@ -407,7 +407,7 @@ public class DcTcpClient {
                         Log.d(TAG, "onSendPacketEnd: ");
                     }
                     mSendStatusListener.onSendEnd();
-                    mSocketClient.removeSocketClientSendingDelegate(this);
+                    mSocketClient.unregisterDataSendingEvent(this);
                 }
 
                 @Override
@@ -416,11 +416,11 @@ public class DcTcpClient {
                         Log.d(TAG, "onSendPacketCancel: ");
                     }
                     mSendStatusListener.onSendCancel();
-                    mSocketClient.removeSocketClientSendingDelegate(this);
+                    mSocketClient.unregisterDataSendingEvent(this);
                 }
 
                 @Override
-                public void onSendingPacketInProgress(SocketClient client, SocketPacket packet, float progress, int sendedLength) {
+                public void onSendingPacketInProgress(SocketClient client, SocketPacket packet, float progress, int sendLength) {
                     if (_isDebug) {
                         Log.d(TAG, "onSendingPacketInProgress: ");
                     }

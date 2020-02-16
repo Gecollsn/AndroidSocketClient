@@ -14,10 +14,10 @@ import java.util.List;
 public class IPUtil {
     final IPUtil self = this;
 
-    
+
     /* Constructors */
-    
-    
+
+
     /* Public Methods */
     public static String getLocalIPAddress(boolean useIPv4) {
         try {
@@ -28,7 +28,7 @@ public class IPUtil {
                     if (!address.isLoopbackAddress()) {
                         String sAddr = address.getHostAddress();
                         //boolean isIPv4 = InetAddressUtils.isIPv4Address(sAddr);
-                        boolean isIPv4 = sAddr.indexOf(':')<0;
+                        boolean isIPv4 = sAddr.indexOf(':') < 0;
 
                         if (useIPv4) {
                             if (isIPv4)
@@ -36,25 +36,27 @@ public class IPUtil {
                         } else {
                             if (!isIPv4) {
                                 int delim = sAddr.indexOf('%'); // drop ip6 zone suffix
-                                return delim<0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
+                                return delim < 0 ? sAddr.toUpperCase() : sAddr.substring(0, delim).toUpperCase();
                             }
                         }
                     }
                 }
             }
-        } catch (Exception ex) { } // for now eat exceptions
+        } catch (Exception ex) {
+            System.out.println("Exception is:" + ex.getMessage());
+        } // for now eat exceptions
         return "";
     }
-    
+
     /* Properties */
-    
-    
+
+
     /* Overrides */
-     
-     
+
+
     /* Delegates */
-     
-     
+
+
     /* Private Methods */
-    
+
 }
