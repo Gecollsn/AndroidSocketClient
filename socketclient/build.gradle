@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-apply from: 'build_library_ext.gradle'
+//apply from: 'build_library_ext.gradle'
 
 android {
     compileSdkVersion 28
@@ -30,4 +30,30 @@ dependencies {
     compile 'com.github.vilyever:AndroidResource:1.2.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
+}
+
+apply plugin: 'maven'
+uploadArchives {
+    repositories.mavenDeployer {
+        //配置maven仓库地址
+        //本地仓库
+        repository(url: 'https://maven.dianchu.cc/repository/maven-releases/') {
+            authentication(userName: 'admin', password: 'admin123')
+        }
+
+        //配置上传信息
+        pom.project {
+            groupId 'com.dc.angryframework.inner'   //maven中保存的文件夹路径，一般是包名，也可以随意
+            artifactId 'DcClient'               //maven中显示的模块名
+            version 'test-3'                         //版本号
+        }
+        pom.withXml {
+            Node pomNode = asNode()
+            pomNode.dependencies.'*'.findAll() {
+                it.groupId.text() == 'android_dev'
+            }.each() {
+                it.parent().remove(it)
+            }
+        }
+    }
 }

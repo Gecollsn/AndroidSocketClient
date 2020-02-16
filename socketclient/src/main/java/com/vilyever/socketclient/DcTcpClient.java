@@ -113,8 +113,9 @@ public class DcTcpClient {
 
         /**
          * 设置发收固定心跳包
-         * @param send     固定发送心跳包
-         * @param receive  固定收到心跳包
+         *
+         * @param send    固定发送心跳包
+         * @param receive 固定收到心跳包
          */
         public DcClientBuilder setHeartbeatData(byte[] send, byte[] receive) {
             this.dcTcpClient.isSendHeartBeatDynamic = false;
@@ -130,8 +131,9 @@ public class DcTcpClient {
 
         /**
          * 设置发固定、收动态心跳包
-         * @param send     固定发送心跳包
-         * @param heartbeatChecker  动态检查接收的心跳包
+         *
+         * @param send             固定发送心跳包
+         * @param heartbeatChecker 动态检查接收的心跳包
          */
         public DcClientBuilder setHeartbeatData(byte[] send, HeartbeatChecker heartbeatChecker) {
             this.dcTcpClient.isSendHeartBeatDynamic = false;
@@ -149,8 +151,9 @@ public class DcTcpClient {
 
         /**
          * 设置发动态、收固定心跳包
-         * @param heartBeatBuilder  动态生成发送心跳包
-         * @param receiveHeartBeat  固定收到心跳包
+         *
+         * @param heartBeatBuilder 动态生成发送心跳包
+         * @param receiveHeartBeat 固定收到心跳包
          */
         public void setHeartBeat(HeartbeatBuilder heartBeatBuilder, byte[] receiveHeartBeat) {
             this.dcTcpClient.isSendHeartBeatDynamic = true;
@@ -166,8 +169,9 @@ public class DcTcpClient {
 
         /**
          * 设置发收动态心跳包
-         * @param heartBeatBuilder  动态生成发送心跳包
-         * @param heartBeatChecker  动态检查接收的心跳包
+         *
+         * @param heartBeatBuilder 动态生成发送心跳包
+         * @param heartBeatChecker 动态检查接收的心跳包
          */
         public void setHeartBeat(HeartbeatBuilder heartBeatBuilder, HeartbeatChecker heartBeatChecker) {
             this.dcTcpClient.isSendHeartBeatDynamic = true;
@@ -223,8 +227,9 @@ public class DcTcpClient {
 
     /**
      * 构造器
-     * @param remoteIp      对端IP
-     * @param remotePort    对端端口
+     *
+     * @param remoteIp   对端IP
+     * @param remotePort 对端端口
      */
     private DcTcpClient(String remoteIp, String remotePort) {
         this.ip = remoteIp;
@@ -240,8 +245,8 @@ public class DcTcpClient {
     }
 
     public static class DisconnectedEvent {
-        boolean isManualDisconnect = false;
-        String reason = "default";
+        private boolean isManualDisconnect = false;
+        private String reason = "default";
 
         DisconnectedEvent() {
 
@@ -250,6 +255,14 @@ public class DcTcpClient {
         DisconnectedEvent(boolean manualDisconnect, String why) {
             isManualDisconnect = manualDisconnect;
             reason = why;
+        }
+
+        public boolean isManualDisconnect() {
+            return isManualDisconnect;
+        }
+
+        public String getReason() {
+            return reason;
         }
     }
 
@@ -279,7 +292,8 @@ public class DcTcpClient {
 
     /**
      * 初始化后或断开连接后，可以连接
-     * @param listener    连接状态回调
+     *
+     * @param listener 连接状态回调
      */
     public synchronized void connect(ConnectStatusListener listener) {
         if (!isSocketConnected) {
@@ -313,7 +327,8 @@ public class DcTcpClient {
 
     /**
      * 发送字节序列
-     * @param bodyData   字节序列
+     *
+     * @param bodyData 字节序列
      */
     public synchronized void send(byte[] bodyData) {
         this.send(bodyData, null);
@@ -321,8 +336,9 @@ public class DcTcpClient {
 
     /**
      * 发送带回调的字节序列
-     * @param bodyData   字节序列
-     * @param listener    发送状态回调
+     *
+     * @param bodyData 字节序列
+     * @param listener 发送状态回调
      */
     public synchronized void send(byte[] bodyData, final SendStatusListener listener) {
         this.mSendStatusListener = listener;

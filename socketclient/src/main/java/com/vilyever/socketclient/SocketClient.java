@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class SocketClient implements ISocketClient {
     public static final String TAG = SocketClient.class.getSimpleName();
     private SocketConfigure socketConfigure = new SocketConfigure();
-    private State state = State.IDLE;
+    private State state = State.Disconnected;
     private Socket mActiveSocket;
 
     private ThreadPoolExecutor executor;
@@ -361,7 +361,7 @@ public class SocketClient implements ISocketClient {
     }
 
     public enum State {
-        IDLE, Disconnecting, Disconnected, Connecting, Connected
+        Disconnecting, Disconnected, Connecting, Connected
     }
 
     private void __i__enqueue(final SocketPacket packet) {
