@@ -3,6 +3,7 @@ package com.vilyever.socketclient;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.vilyever.socketclient.api.ISocketClient;
 import com.vilyever.socketclient.helper.ClientSendingEvent;
 import com.vilyever.socketclient.helper.ClientStatusEvent;
 import com.vilyever.socketclient.helper.SocketHeartBeatHelper;
@@ -14,7 +15,7 @@ import com.vilyever.socketclient.util.StringValidation;
 
 
 public class DcTcpClient {
-    private SocketClient mSocketClient;
+    private ISocketClient mSocketClient;
     private String ip;
     private String port;
 
@@ -324,7 +325,6 @@ public class DcTcpClient {
         }
     }
 
-
     /**
      * 发送字节序列
      *
@@ -354,7 +354,7 @@ public class DcTcpClient {
         }
     }
 
-    private SocketClient getDcProtoClient(final ConnectStatusListener listener) {
+    private ISocketClient getDcProtoClient(final ConnectStatusListener listener) {
         this.mConnectStatusListener = listener;
 
         //注册状态回调
@@ -448,18 +448,18 @@ public class DcTcpClient {
         return mSocketClientSendingListener;
     }
 
-    private void __i__setupAddress(SocketClient socketClient) {
+    private void __i__setupAddress(ISocketClient socketClient) {
         socketClient.getAddress()
                 .setRemoteIP(this.ip)
                 .setRemotePort(this.port)
                 .setConnectionTimeout(this.mConnectionTimeout);
     }
 
-    private void __i__setupEncoding(SocketClient socketClient) {
+    private void __i__setupEncoding(ISocketClient socketClient) {
         socketClient.setCharsetName(CharsetUtil.UTF_8); // 设置编码为UTF-8
     }
 
-    private void __i__setupHeartBeat(SocketClient socketClient) {
+    private void __i__setupHeartBeat(ISocketClient socketClient) {
         if (mHeartbeatInterval > 0) {
             if (isSendHeartBeatDynamic) {
                 socketClient.getHeartBeatHelper().setSendDataBuilder(new SocketHeartBeatHelper.SendDataBuilder() {
@@ -487,7 +487,7 @@ public class DcTcpClient {
         }
     }
 
-    private void __i__setupReadByLengthForSender(SocketClient socketClient) {
+    private void __i__setupReadByLengthForSender(ISocketClient socketClient) {
         if (bytesIndicateDataLength > 0) {
             socketClient.getSocketPacketHelper().setSendPacketLengthDataConverter(new SocketPacketHelper.SendPacketLengthDataConvertor() {
                 @Override
@@ -512,7 +512,7 @@ public class DcTcpClient {
         }
     }
 
-    private void __i__setupReadByLengthForReceiver(SocketClient socketClient) {
+    private void __i__setupReadByLengthForReceiver(ISocketClient socketClient) {
         if (bytesIndicateDataLength > 0) {
             socketClient.getSocketPacketHelper().setReadStrategy(SocketPacketHelper.ReadStrategy.AutoReadByLength);
 

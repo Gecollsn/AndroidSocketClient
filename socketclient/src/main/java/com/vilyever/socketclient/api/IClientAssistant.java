@@ -25,6 +25,8 @@ public interface IClientAssistant {
 
     ITimeRecorder getTimeRecorder();
 
+    void executeTask(Runnable runnable);
+
     void killAllTask();
 
     Socket newSocket();

@@ -28,10 +28,8 @@ public class DisconnectSocketTask extends AbsSocketTask {
             }
         }
 
-        mClientAssistant.killAllTask();
-
         mClientAssistant.updateState(SocketClient.State.Disconnected);
-
         mClientAssistant.getSocketEventManager().noticeSocketDisconnected();
+        mClientAssistant.killAllTask();
     }
 }

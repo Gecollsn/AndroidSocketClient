@@ -1,5 +1,6 @@
 package com.vilyever.socketclient.manager;
 
+import com.vilyever.socketclient.api.IClientAssistant;
 import com.vilyever.socketclient.api.ISocketClient;
 import com.vilyever.socketclient.helper.SocketPacket;
 
@@ -39,12 +40,12 @@ public class DataPacketSendManager implements IDataPacketManager {
         return mSendingPacket != null;
     }
 
-    public void enqueue(ThreadPoolExecutor poolExecutor, SocketPacket packet) {
+    public void enqueue(IClientAssistant clientAssistant, SocketPacket packet) {
         if (!mSocketClient.isConnected()) {
             return;
         }
 
-        poolExecutor.execute(() -> {
+        clientAssistant.executeTask(() -> {
             synchronized (sendingPacketQueue) {
                 try {
                     sendingPacketQueue.put(packet);

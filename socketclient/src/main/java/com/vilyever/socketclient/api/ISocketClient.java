@@ -6,6 +6,7 @@ import com.vilyever.socketclient.helper.ClientSendingEvent;
 import com.vilyever.socketclient.helper.ClientStatusEvent;
 import com.vilyever.socketclient.helper.SocketClientAddress;
 import com.vilyever.socketclient.helper.SocketHeartBeatHelper;
+import com.vilyever.socketclient.helper.SocketPacket;
 import com.vilyever.socketclient.helper.SocketPacketHelper;
 
 @SuppressWarnings("UnusedReturnValue")
@@ -38,6 +39,10 @@ public interface ISocketClient {
     boolean isDisConnecting();
 
     void disconnect();
+
+    void connect();
+
+    SocketPacket sendData(byte[] data);
 
     SocketClient registerSocketStatusEvent(ClientStatusEvent delegate);
 

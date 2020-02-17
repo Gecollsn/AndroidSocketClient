@@ -1,5 +1,7 @@
 package com.vilyever.socketclient;
 
+import android.util.Log;
+
 import com.vilyever.socketclient.api.IClientAssistant;
 import com.vilyever.socketclient.api.ISocketClient;
 import com.vilyever.socketclient.api.ITimeRecorder;
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @SuppressWarnings("UnusedReturnValue")
 public class SocketClient implements ISocketClient {
-    public static final String TAG = SocketClient.class.getSimpleName();
+    private static final String TAG = SocketClient.class.getSimpleName();
     private SocketConfigure socketConfigure = new SocketConfigure();
     private State state = State.Disconnected;
     private Socket mActiveSocket;
@@ -97,6 +99,8 @@ public class SocketClient implements ISocketClient {
             clearTaskState(mSendTask);
             clearTaskState(mReceiveTask);
             clearTaskState(mHeartbeatTask);
+
+            release();
         }
 
         @Override
@@ -117,23 +121,27 @@ public class SocketClient implements ISocketClient {
             }
             mActiveSocket = null;
         }
+
+        @Override
+        public void executeTask(Runnable runnable) {
+            SocketClient.this.executeTask(runnable);
+        }
     };
 
-    public SocketClient() {
-        newThreadPool();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        shutdownPool();
+    private void release() {
         mSocketEventManager.clearAll();
+        sendDataPacketManager.reset();
+        shutdownPool();
+
+        Log.d(TAG, this.hashCode() + " socket client released!");
     }
 
     private void shutdownPool() {
         if (executor != null && !executor.isShutdown()) {
             executor.shutdown();
         }
+
+        executor = null;
     }
 
     private synchronized void newThreadPool() {
@@ -143,12 +151,16 @@ public class SocketClient implements ISocketClient {
         }
     }
 
-    private synchronized ThreadPoolExecutor getThreadPool() {
-        if (executor == null) {
-            newThreadPool();
+    private synchronized void executeTask(Runnable runnable) {
+        if (executor != null && !executor.isShutdown()) {
+            executor.execute(runnable);
         }
+    }
 
-        return executor;
+    private synchronized void removeTask(Runnable runnable) {
+        if (executor != null && !executor.isShutdown()) {
+            executor.remove(runnable);
+        }
     }
 
     public synchronized void connect() {
@@ -160,6 +172,8 @@ public class SocketClient implements ISocketClient {
             throw new IllegalArgumentException("we need a SocketClientAddress to connect");
         }
 
+        newThreadPool();
+
         getAddress().checkValidation();
         getSocketPacketHelper().checkValidation();
 
@@ -169,13 +183,13 @@ public class SocketClient implements ISocketClient {
 
         mConnectTask = new ConnectSocketTask(this, mClientAssistant);
 
-        getThreadPool().execute(mConnectTask);
+        executeTask(mConnectTask);
     }
 
     private void clearTaskState(ISocketTask task) {
         if (task != null) {
             task.kill();
-            getThreadPool().remove(task);
+            removeTask(task);
         }
     }
 
@@ -188,7 +202,7 @@ public class SocketClient implements ISocketClient {
 
         clearTaskState(mDisconnectTask);
         mDisconnectTask = new DisconnectSocketTask(this, mClientAssistant);
-        getThreadPool().execute(mDisconnectTask);
+        executeTask(mDisconnectTask);
     }
 
     @Override
@@ -365,7 +379,7 @@ public class SocketClient implements ISocketClient {
     }
 
     private void __i__enqueue(final SocketPacket packet) {
-        sendDataPacketManager.enqueue(getThreadPool(), packet);
+        sendDataPacketManager.enqueue(mClientAssistant, packet);
     }
 
     private synchronized void __i__onConnected() {
@@ -385,15 +399,15 @@ public class SocketClient implements ISocketClient {
 
         clearTaskState(mHeartbeatTask);
         mHeartbeatTask = new HeartbeatTask(this, mClientAssistant);
-        getThreadPool().execute(mHeartbeatTask);
+        executeTask(mHeartbeatTask);
 
 
         clearTaskState(mSendTask);
         mSendTask = new SendPacketTask(this, mClientAssistant);
-        getThreadPool().execute(mSendTask);
+        executeTask(mSendTask);
 
         clearTaskState(mReceiveTask);
         mReceiveTask = new ReceivePacketTask(this, mClientAssistant);
-        getThreadPool().execute(mReceiveTask);
+        executeTask(mReceiveTask);
     }
 }
