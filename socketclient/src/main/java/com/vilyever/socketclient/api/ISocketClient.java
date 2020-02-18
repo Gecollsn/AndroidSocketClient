@@ -42,6 +42,8 @@ public interface ISocketClient {
 
     void connect();
 
+    void release();
+
     SocketPacket sendData(byte[] data);
 
     SocketClient registerSocketStatusEvent(ClientStatusEvent delegate);

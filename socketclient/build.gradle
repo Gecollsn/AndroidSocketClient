@@ -45,7 +45,7 @@ uploadArchives {
         pom.project {
             groupId 'com.dc.angryframework.inner'   //maven中保存的文件夹路径，一般是包名，也可以随意
             artifactId 'DcClient'               //maven中显示的模块名
-            version '3.0.0-test-1'                         //版本号
+            version '3.0.0-test-3'                         //版本号
         }
         pom.withXml {
             Node pomNode = asNode()

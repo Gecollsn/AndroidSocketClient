@@ -100,7 +100,7 @@ public class SocketClient implements ISocketClient {
             clearTaskState(mReceiveTask);
             clearTaskState(mHeartbeatTask);
 
-            release();
+            shutdownPool();
         }
 
         @Override
@@ -128,10 +128,9 @@ public class SocketClient implements ISocketClient {
         }
     };
 
-    private void release() {
+    public void release() {
         mSocketEventManager.clearAll();
         sendDataPacketManager.reset();
-        shutdownPool();
 
         Log.d(TAG, this.hashCode() + " socket client released!");
     }

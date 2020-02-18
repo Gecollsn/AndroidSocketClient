@@ -194,26 +194,7 @@ public class DcTcpClient {
 
             //todo segment大小限制
 
-            prepareSocketClient(dcTcpClient);
             return dcTcpClient;
-        }
-
-        private void prepareSocketClient(final DcTcpClient dcTcpClient) {
-            if (dcTcpClient.mSocketClient == null) {
-                dcTcpClient.mSocketClient = new SocketClient();
-
-                dcTcpClient.__i__setupAddress(dcTcpClient.mSocketClient);
-
-                dcTcpClient.__i__setupEncoding(dcTcpClient.mSocketClient);
-
-                //设置心跳包
-                dcTcpClient.__i__setupHeartBeat(dcTcpClient.mSocketClient);
-
-                //发送添加包头
-                dcTcpClient.__i__setupReadByLengthForSender(dcTcpClient.mSocketClient);
-                //解析接收包头
-                dcTcpClient.__i__setupReadByLengthForReceiver(dcTcpClient.mSocketClient);
-            }
         }
 
         private boolean checkIpIllegal(String ip) {
@@ -223,6 +204,26 @@ public class DcTcpClient {
         private boolean checkPortIllegal(String port) {
             return StringValidation.validateRegex(port, StringValidation.RegexPort);
         }
+    }
+
+    private ISocketClient prepareSocketClient() {
+        if (mSocketClient == null) {
+            mSocketClient = new SocketClient();
+
+            __i__setupAddress(mSocketClient);
+
+            __i__setupEncoding(mSocketClient);
+
+            //设置心跳包
+            __i__setupHeartBeat(mSocketClient);
+
+            //发送添加包头
+            __i__setupReadByLengthForSender(mSocketClient);
+            //解析接收包头
+            __i__setupReadByLengthForReceiver(mSocketClient);
+        }
+
+        return mSocketClient;
     }
 
 
@@ -299,8 +300,18 @@ public class DcTcpClient {
     public synchronized void connect(ConnectStatusListener listener) {
         if (!isSocketConnected) {
             try {
-                getDcProtoClient(listener).connect();
+                this.mConnectStatusListener = listener;
+
+                ISocketClient socketClient = prepareSocketClient();
+
+                //注册状态回调
+                if (mConnectStatusListener != null) {
+                    socketClient.registerSocketStatusEvent(getSocketClientConnectListener());
+                }
+
+                socketClient.connect();
             } catch (Exception e) {
+                this.mConnectStatusListener = null;
                 listener.onDisconnected(new DisconnectedEvent(false, "Exception in connecting: " + e.toString()));
             }
         }
@@ -310,7 +321,7 @@ public class DcTcpClient {
      * 手动断开连接
      */
     public synchronized void disconnect() {
-        if (this.mSocketClient != null && isSocketConnected) {
+        if (getDcProtoClient() != null && isSocketConnected) {
             isManualDisconnect = true;
             isSocketConnected = false;
 
@@ -318,11 +329,20 @@ public class DcTcpClient {
                 mConnectStatusListener.onDisconnected(new DisconnectedEvent(true, "disconnect by user"));
             }
 
-            this.mConnectStatusListener = null;
-            this.mSocketClient.unregisterSocketStatusEvent(mSocketClientConnectListener);
-            this.mSocketClient.unregisterDataSendingEvent(mSocketClientSendingListener);
-            this.mSocketClient.disconnect();
+            getDcProtoClient().disconnect();
+            releaseResources();
         }
+    }
+
+    private void releaseResources() {
+        this.mConnectStatusListener = null;
+        if (getDcProtoClient() != null) {
+            getDcProtoClient().unregisterSocketStatusEvent(mSocketClientConnectListener);
+            getDcProtoClient().unregisterDataSendingEvent(mSocketClientSendingListener);
+            getDcProtoClient().release();
+        }
+
+        this.mSocketClient = null;
     }
 
     /**
@@ -343,25 +363,18 @@ public class DcTcpClient {
     public synchronized void send(byte[] bodyData, final SendStatusListener listener) {
         this.mSendStatusListener = listener;
 
-        if (bodyData == null || this.mSocketClient == null || !isSocketConnected) {
+        if (bodyData == null || this.getDcProtoClient() == null || !isSocketConnected) {
             if (this.mSendStatusListener != null)
                 this.mSendStatusListener.onSendCancel();
         } else {
             if (this.mSendStatusListener != null) {
-                this.mSocketClient.registerDataSendingEvent(getSocketClientSendingListener());
+                this.getDcProtoClient().registerDataSendingEvent(getSocketClientSendingListener());
             }
-            this.mSocketClient.sendData(bodyData);
+            this.getDcProtoClient().sendData(bodyData);
         }
     }
 
-    private ISocketClient getDcProtoClient(final ConnectStatusListener listener) {
-        this.mConnectStatusListener = listener;
-
-        //注册状态回调
-        if (mConnectStatusListener != null) {
-            mSocketClient.registerSocketStatusEvent(getSocketClientConnectListener());
-        }
-
+    private ISocketClient getDcProtoClient() {
         return this.mSocketClient;
     }
 
@@ -385,6 +398,8 @@ public class DcTcpClient {
                     }
                     mConnectStatusListener.onDisconnected(new DisconnectedEvent(isManualDisconnect, isManualDisconnect ? "Manual disconnect" : "default"));
                     isManualDisconnect = false;
+
+                    releaseResources();
                 }
 
                 @Override
@@ -423,7 +438,9 @@ public class DcTcpClient {
                         Log.d(TAG, "onSendPacketEnd: ");
                     }
                     mSendStatusListener.onSendEnd();
-                    mSocketClient.unregisterDataSendingEvent(this);
+                    if (getDcProtoClient() != null) {
+                        getDcProtoClient().unregisterDataSendingEvent(this);
+                    }
                 }
 
                 @Override
@@ -432,7 +449,9 @@ public class DcTcpClient {
                         Log.d(TAG, "onSendPacketCancel: ");
                     }
                     mSendStatusListener.onSendCancel();
-                    mSocketClient.unregisterDataSendingEvent(this);
+                    if (getDcProtoClient() != null) {
+                        getDcProtoClient().unregisterDataSendingEvent(this);
+                    }
                 }
 
                 @Override
